@@ -9,7 +9,9 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import java.util.*
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
 
 
 class AnalogClockView : View {
@@ -58,6 +60,30 @@ class AnalogClockView : View {
             CONSTANTS.mRadius,
             CONSTANTS.mDialPaint
         )
+
+        // Draw the indicator mark.
+        CONSTANTS.apply {
+            mTextPaint.style = Paint.Style.FILL
+            mTextPaint.color = Color.WHITE
+            mTextPaint.textSize = 35f
+            val numberCircleRadius = mRadius - 60
+            for (i in 0..11) {
+                val xyData = calcXYForPosition(i.toFloat(), numberCircleRadius, 30)
+                canvas.drawText(i.toString(), xyData[0], xyData[1], mTextPaint)
+            }
+        }
+    }
+
+    private fun calcXYForPosition(pos: Float, rad: Float, skipAngle: Int): ArrayList<Float> {
+        val result = ArrayList<Float>(2)
+        val startAngle = 270f
+
+        // Angle between continually number radians. 360/12 = 30
+        val angle = startAngle + (pos * skipAngle)
+
+        result.add(0, (rad * cos(angle * Math.PI / 180) + width / 2).toFloat())
+        result.add(1, (height / 2 + rad * sin(angle * Math.PI / 180)).toFloat())
+        return result
     }
 
     // when view created or device rotate this will called so we can get width and height of canvas
