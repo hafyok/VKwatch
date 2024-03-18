@@ -6,19 +6,24 @@ import android.content.res.TypedArray
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Handler
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import com.example.vkwatch.CONSTANTS.hourData
+import com.example.vkwatch.CONSTANTS.mDialPaint
 import com.example.vkwatch.CONSTANTS.mHeight
 import com.example.vkwatch.CONSTANTS.mHourHandColor
 import com.example.vkwatch.CONSTANTS.mHourHandWidth
 import com.example.vkwatch.CONSTANTS.mMinuteHandColor
 import com.example.vkwatch.CONSTANTS.mMinuteHandWidth
+import com.example.vkwatch.CONSTANTS.mRadius
 import com.example.vkwatch.CONSTANTS.mSecondHandColor
 import com.example.vkwatch.CONSTANTS.mSecondHandWidth
 import com.example.vkwatch.CONSTANTS.mWidth
 import com.example.vkwatch.CONSTANTS.minuteData
 import com.example.vkwatch.CONSTANTS.secondData
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.cos
 import kotlin.math.min
@@ -40,12 +45,32 @@ class AnalogClockView : View {
         setupAttributes(attrs)
     }
 
+    // create handler and time updater Runnable
+    private var mHandler: Handler = Handler()
+    private var mTimeUpdater: Runnable
+
     init {
         CONSTANTS.apply {
             mTextPaint.color = Color.BLACK
             mTextPaint.style = Paint.Style.FILL_AND_STROKE
             mTextPaint.textAlign = Paint.Align.CENTER
             mTextPaint.textSize = 40f
+        }
+
+        // initialize time updater runnable
+        mTimeUpdater = object : Runnable {
+            override fun run() {
+                // update clock time data
+                val currentTime: String =
+                    SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+                setClockTime(
+                    currentTime.substring(0, 2).toFloat() % 12,
+                    currentTime.substring(3, 5).toFloat(),
+                    currentTime.substring(6, 8).toInt()
+                )
+                // recall update runnable after 1 sec (1000ms)
+                mHandler.postDelayed(this, 1000)
+            }
         }
 
     }
@@ -68,12 +93,12 @@ class AnalogClockView : View {
         canvas.drawCircle(
             mWidth / 2,
             mHeight / 2,
-            CONSTANTS.mRadius,
-            CONSTANTS.mDialPaint
+            mRadius,
+            mDialPaint
         )
 
         // Draw the indicator mark.
-        val numberCircleRadius = CONSTANTS.mRadius - 60
+        val numberCircleRadius = mRadius - 60
         CONSTANTS.apply {
             mTextPaint.style = Paint.Style.FILL
             mTextPaint.color = Color.WHITE
@@ -177,5 +202,24 @@ class AnalogClockView : View {
         }
         // TypedArray objects are shared and must be recycled.
         typedArray.recycle()
+    }
+
+    // set clock hand
+    private fun setClockTime(hour: Float, minute: Float, second: Int) {
+        hourData = hour + (minute / 60)
+        Log.d("time_data", hourData.toString())
+        minuteData = minute
+        secondData = second
+        invalidate()
+    }
+
+    // start clock
+    fun startClock() {
+        mHandler.post(mTimeUpdater)
+    }
+
+    // stop clock
+    fun stopClock() {
+        mHandler.removeCallbacks(mTimeUpdater)
     }
 }
