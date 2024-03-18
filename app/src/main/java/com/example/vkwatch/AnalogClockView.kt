@@ -106,10 +106,15 @@ class AnalogClockView : View {
 
             for (i in 0..11) {
                 val xyData = calcXYForPosition(i.toFloat(), numberCircleRadius, 30)
-                canvas.drawText(i.toString(), xyData[0], xyData[1], mTextPaint)
+                if (i == 0){
+                    canvas.drawText("12", xyData[0], xyData[1], mTextPaint)
+                }else {
+                    canvas.drawText(i.toString(), xyData[0], xyData[1], mTextPaint)
+                }
             }
         }
 
+        // hour hand
         drawHandWithPaint(
             canvas,
             mHourHandColor,
