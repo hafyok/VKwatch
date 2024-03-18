@@ -22,4 +22,9 @@ object CONSTANTS{
     var mWidth = 0.0f
     var mHeight = 0.0f
     var mRadius = 0.0f
+
+    // initial position of clock
+    var hourData = 0f
+    var minuteData = 0f
+    var secondData = 0
 }

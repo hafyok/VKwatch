@@ -8,6 +8,17 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import com.example.vkwatch.CONSTANTS.hourData
+import com.example.vkwatch.CONSTANTS.mHeight
+import com.example.vkwatch.CONSTANTS.mHourHandColor
+import com.example.vkwatch.CONSTANTS.mHourHandWidth
+import com.example.vkwatch.CONSTANTS.mMinuteHandColor
+import com.example.vkwatch.CONSTANTS.mMinuteHandWidth
+import com.example.vkwatch.CONSTANTS.mSecondHandColor
+import com.example.vkwatch.CONSTANTS.mSecondHandWidth
+import com.example.vkwatch.CONSTANTS.mWidth
+import com.example.vkwatch.CONSTANTS.minuteData
+import com.example.vkwatch.CONSTANTS.secondData
 import java.util.*
 import kotlin.math.cos
 import kotlin.math.min
@@ -55,23 +66,64 @@ class AnalogClockView : View {
 
         // Draw the dial
         canvas.drawCircle(
-            CONSTANTS.mWidth / 2,
-            CONSTANTS.mHeight / 2,
+            mWidth / 2,
+            mHeight / 2,
             CONSTANTS.mRadius,
             CONSTANTS.mDialPaint
         )
 
         // Draw the indicator mark.
+        val numberCircleRadius = CONSTANTS.mRadius - 60
         CONSTANTS.apply {
             mTextPaint.style = Paint.Style.FILL
             mTextPaint.color = Color.WHITE
             mTextPaint.textSize = 35f
-            val numberCircleRadius = mRadius - 60
+
             for (i in 0..11) {
                 val xyData = calcXYForPosition(i.toFloat(), numberCircleRadius, 30)
                 canvas.drawText(i.toString(), xyData[0], xyData[1], mTextPaint)
             }
         }
+
+        drawHandWithPaint(
+            canvas,
+            mHourHandColor,
+            mHourHandWidth,
+            calcXYForPosition(hourData, numberCircleRadius - 130, 30)
+        )
+
+        // minute hand
+        drawHandWithPaint(
+            canvas,
+            mMinuteHandColor,
+            mMinuteHandWidth,
+            calcXYForPosition(minuteData, numberCircleRadius - 80, 6)
+        )
+        // second hand
+        drawHandWithPaint(
+            canvas,
+            mSecondHandColor,
+            mSecondHandWidth,
+            calcXYForPosition(secondData.toFloat(), numberCircleRadius - 30, 6)
+        )
+    }
+
+    private fun drawHandWithPaint(
+        canvas: Canvas?,
+        handColor: Int,
+        strokeWidth: Float,
+        xyData: ArrayList<Float>
+    ) {
+        val handPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        handPaint.color = handColor
+        handPaint.strokeWidth = strokeWidth
+        canvas?.drawLine(
+            mWidth / 2,
+            mHeight / 2,
+            xyData[0],
+            xyData[1],
+            handPaint
+        )
     }
 
     private fun calcXYForPosition(pos: Float, rad: Float, skipAngle: Int): ArrayList<Float> {
@@ -85,6 +137,7 @@ class AnalogClockView : View {
         result.add(1, (height / 2 + rad * sin(angle * Math.PI / 180)).toFloat())
         return result
     }
+
 
     // when view created or device rotate this will called so we can get width and height of canvas
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
